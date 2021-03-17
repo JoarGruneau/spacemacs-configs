@@ -34,7 +34,7 @@ This function should only modify configuration layer settings."
      (ivy :variables ivy-enable-advanced-buffer-information nil)
      better-defaults
      ranger
-     emoji
+     ;; emoji
      colors
      prodigy
      search-engine
@@ -730,7 +730,7 @@ dump."
   ;;                         'gbk))
   ;; ;; (add-hook 'text-mode-hook 'spacemacs/toggle-spelling-checking-on)
 
-  (add-hook 'org-mode-hook 'emojify-mode)
+  ;; (add-hook 'org-mode-hook 'emojify-mode)
   (add-hook 'org-mode-hook 'auto-fill-mode)
 
   (with-eval-after-load 'transient
