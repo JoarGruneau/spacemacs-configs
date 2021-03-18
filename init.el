@@ -125,7 +125,7 @@ This function should only modify configuration layer settings."
                     helm-themes helm-swoop helm-spacemacs-help smeargle
                     ido-vertical-mode flx-ido company-quickhelp ivy-rich helm-purpose
                     )
-   dotspacemacs-install-packages 'used-only
+   dotspacemacs-install-packages '(used-only json)
    dotspacemacs-delete-orphan-packages t))
 
 (defun dotspacemacs/init ()
@@ -594,9 +594,12 @@ dump."
   (define-key evil-normal-state-map (kbd "ö") 'evil-numbers/inc-at-pt)
   (define-key evil-normal-state-map (kbd "å") 'evil-numbers/dec-at-pt)
   (define-key evil-normal-state-map (kbd "ä") 'end-of-line)
+
   (require 'parrot-rotate)
   (define-key evil-normal-state-map (kbd "t") 'parrot-rotate-next-word-at-point)
   (define-key evil-normal-state-map (kbd "T") 'parrot-rotate-prev-word-at-point)
+
+  (require 'guild)
 
 
   ;;kill running processes in terminal
