@@ -1,0 +1,66 @@
+;;; poetry-new-project-test.el --- Tests for poetry.el
+
+
+(ert-deftest poetry-new-should-create-a-new-project ()
+  (poetry-test-cleanup)
+  (let ((ppath (poetry-test-create-empty-folder)))
+    (poetry-new ppath)
+    (poetry-wait-for-calls)
+  (let ((pyproj-path (concat (file-name-as-directory ppath)
+                                  "pyproject.toml"))
+        (readme-path (concat (file-name-as-directory ppath)
+                                  "README.rst"))
+        (tests-path (concat (file-name-as-directory ppath)
+                                  "tests")))
+    (should (file-exists-p pyproj-path))
+    (should (file-exists-p readme-path))
+    (should (file-exists-p tests-path)))))
+
+(ert-deftest poetry-new-should-create-new-directories ()
+  (poetry-test-cleanup)
+  (let ((ppath (concat (poetry-test-create-empty-folder)
+                       "/myproject")))
+    (poetry-new ppath)
+    (poetry-wait-for-calls)
+  (let ((pyproj-path (concat (file-name-as-directory ppath)
+                                  "pyproject.toml"))
+        (readme-path (concat (file-name-as-directory ppath)
+                                  "README.rst"))
+        (tests-path (concat (file-name-as-directory ppath)
+                                  "tests")))
+    (should (file-exists-p pyproj-path))
+    (should (file-exists-p readme-path))
+    (should (file-exists-p tests-path)))))
+
+;; (ert-deftest poetry-new-should-activate-venv-when-tracking ()
+;;   (poetry-test-cleanup)
+;;   (make-directory (poetry-get-configuration "virtualenvs.path") t)
+;;   (let ((ppath (concat (poetry-test-create-empty-folder)
+;;                        "/myproject")))
+;;     (poetry-tracking-mode 1)
+;;     (poetry-new ppath)
+;;     (poetry-wait-for-calls)
+;;     (should (string-match "virtualenvs" pyvenv-virtual-env))))
+
+(ert-deftest poetry-new-should-activate-venv-when-tracking ()
+  (poetry-test-cleanup)
+  (cl-letf (((symbol-function 'pyvenv-activate)
+             (lambda (dir)
+               (setq pyvenv-virtual-env dir)))
+            ((symbol-function 'directory-files)
+             (lambda (dir &optional full match nosort)
+               (list (concat (file-name-as-directory dir)
+                             (poetry-normalize-project-name
+                              (poetry-get-project-name)))))))
+    (let* ((ppath (poetry-test-create-empty-folder))
+           (project-path (file-name-directory
+                          (directory-file-name
+                           (file-name-directory ppath)))))
+      (poetry-tracking-mode 1)
+      (poetry-new ppath)
+      (poetry-wait-for-calls)
+      ;; should activate the venv
+      (should (string-match (concat project-path ".venv")
+                            pyvenv-virtual-env)))))
+
+;;; poetry-new-project-test.el ends here

@@ -506,6 +506,9 @@ dump."
   )
 
 (defun dotspacemacs/user-config ()
+  (add-to-list 'load-path "~/.spacemacs.d/poetry.el")
+  (require 'poetry)
+  (poetry-tracking-mode t)
   ;; (add-hook 'python-mode-hook (lambda ()
   ;;                               (require 'sphinx-doc)
   ;;                               (sphinx-doc-mode t)))
