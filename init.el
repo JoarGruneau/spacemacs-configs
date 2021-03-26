@@ -80,6 +80,8 @@ This function should only modify configuration layer settings."
      (python :variables
              python-backend 'anaconda
              ;; python-formatter 'black
+             python-format-on-save t
+             python-sort-imports-on-save t
              ;; python-format-on-save nil
              python-test-runner '(pytest nose))
      ;; (ruby :variables ruby-version-manager 'chruby)
@@ -544,7 +546,7 @@ dump."
             (lambda ()
               (dired-hide-details-mode)))
 
-  ;; dired no confirmation delete
+  ;; dired no confirmation delete 
   (setq dired-deletion-confirmer '(lambda (x) t))
   ;; fix bug move select whole line
   (drag-stuff-mode t)
@@ -656,45 +658,6 @@ dump."
                                (counsel-grep .2)
                                (t . 3)))
 
-  ;; boost find file and load saved persp layout  performance
-  ;; which will break some function on windows platform
-  ;; eg. known issues: magit related buffer color, reopen will fix it
-  (when (spacemacs/system-is-mswindows)
-    (progn (setq find-file-hook nil)
-           (setq vc-handled-backends nil)
-           (setq magit-refresh-status-buffer nil)
-           (add-hook 'find-file-hook 'spacemacs/check-large-file)
-
-           ;; emax.7z in not under pdumper release
-           ;; https://github.com/m-parashar/emax64/releases/tag/pdumper-20180619
-           (defvar emax-root (concat (expand-file-name "~") "/emax"))
-
-           (when (file-exists-p emax-root)
-             (progn
-               (defvar emax-root (concat (expand-file-name "~") "/emax"))
-               (defvar emax-bin64 (concat emax-root "/bin64"))
-               (defvar emax-mingw64 (concat emax-root "/mingw64/bin"))
-               (defvar emax-lisp (concat emax-root "/lisp"))
-
-               (setq exec-path (cons emax-bin64 exec-path))
-               (setenv "PATH" (concat emax-bin64 ";" (getenv "PATH")))
-
-               (setq exec-path (cons emax-mingw64 exec-path))
-               (setenv "PATH" (concat emax-mingw64 ";" (getenv "PATH")))
-               ))
-
-           (add-hook 'projectile-mode-hook '(lambda () (remove-hook 'find-file-hook #'projectile-find-file-hook-function)))))
-
-  ;; (defun counsel-locate-cmd-es (input)
-  ;;   "Return a shell command based on INPUT."
-  ;;   (counsel-require-program "es.exe")
-  ;;   (encode-coding-string (format "es.exe -i -r -p %s"
-  ;;                                 (counsel-unquote-regex-parens
-  ;;                                  (ivy--regex input t)))
-  ;;                         'gbk))
-  ;; ;; (add-hook 'text-mode-hook 'spacemacs/toggle-spelling-checking-on)
-
-  ;; (add-hook 'org-mode-hook 'emojify-mode)
   (add-hook 'org-mode-hook 'auto-fill-mode)
 
   (with-eval-after-load 'transient
