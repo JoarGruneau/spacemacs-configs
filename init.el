@@ -59,6 +59,7 @@ This function should only modify configuration layer settings."
      (auto-completion :variables auto-completion-enable-sort-by-usage t
                       auto-completion-enable-snippets-in-popup t
                       auto-completion-tab-key-behavior nil
+                      auto-completion-minimum-prefix-length 2
                       :disabled-for org markdown)
      restclient
      (gtags :disabled-for clojure emacs-lisp latex javascript python shell-script)
@@ -77,10 +78,10 @@ This function should only modify configuration layer settings."
           org-enable-hugo-support t)
      react
      (python :variables
-             ;; python-backend 'lsp
-             python-formatter 'black
-             python-format-on-save t
-             python-test-runner '(nose pytest))
+             python-backend 'anaconda
+             ;; python-formatter 'black
+             ;; python-format-on-save nil
+             python-test-runner '(pytest nose))
      ;; (ruby :variables ruby-version-manager 'chruby)
      ;; ruby-on-rails
      ;;lua
@@ -103,7 +104,7 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(sicp ssh-agency sphinx-doc)
+   dotspacemacs-additional-packages '(sicp ssh-agency sphinx-doc drag-stuff)
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -506,13 +507,6 @@ dump."
   )
 
 (defun dotspacemacs/user-config ()
-  (add-to-list 'load-path "~/.spacemacs.d/poetry.el")
-  (require 'poetry)
-  (poetry-tracking-mode t)
-  ;; (add-hook 'python-mode-hook (lambda ()
-  ;;                               (require 'sphinx-doc)
-  ;;                               (sphinx-doc-mode t)))
-
   ;; (global-set-key (kbd "TAB") 'hippie-expand)
   (remove-hook 'python-mode-hook 'spacemacs//init-eldoc-python-mode)
   (setq projectile-mode-line "Projectile")
@@ -520,10 +514,10 @@ dump."
     (unless (file-remote-p default-directory) ad-do-it))
   ;; (set-face-attribute 'default nil :font "-DAMA-Ubuntu Mono-normal-normal-normal-*-15-*-*-*-m-0-iso10646-1" :weight 'ultralight)
   ;; paste over multiple timed
-  (defun evil-paste-after-from-0 ()
-    (interactive)
-    (let ((evil-this-register ?0))
-      (call-interactively 'evil-paste-after)))
+  ;; (defun evil-paste-after-from-0 ()
+  ;;   (interactive)
+  ;;   (let ((evil-this-register ?0))
+  ;;     (call-interactively 'evil-paste-after)))
 
   (define-key evil-visual-state-map "p" 'evil-paste-after-from-0)
   ;; create no lock files
@@ -533,9 +527,6 @@ dump."
   (add-hook 'js2-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
   (add-hook 'spacemacs-buffer-mode-hook (lambda ()
                                           (set (make-local-variable 'mouse-1-click-follows-link) nil)))
-  ;; set python shell interpreters
-  ;; (setq python-shell-interpreter "/home/joar/anaconda3/bin/python")
-  ;; (setq python-shell-interpreter-args "-m IPython --simple-prompt -i")
   (add-hook 'inferior-python-mode-hook
             (lambda ()
               (setq company-mode nil)))
@@ -547,36 +538,6 @@ dump."
 
   (add-hook 'mouse-leave-buffer-hook #'kill-minibuffer)
   (setq ibuffer-expert t)
-  ;; (global-auto-revert-mode t)
-  ;; Run python and pop-up its shell.
-  ;; Kill process to solve the reload modules problem.
-  (defun my-python-shell-run ()
-    (interactive)
-    (when (get-buffer-process "*Python*")
-      (set-process-query-on-exit-flag (get-buffer-process "*Python*") nil)
-      (kill-process (get-buffer-process "*Python*"))
-      ;; If you want to clean the buffer too.
-      (with-current-buffer "*Python*"
-        (let ((comint-buffer-maximum-size 0))
-          (comint-truncate-buffer))
-        )
-      (sleep-for 0.3)
-      )
-    (run-python (python-shell-parse-command) nil nil)
-    (python-shell-send-buffer)
-    ;; Pop new window only if shell isnt visible
-    ;; in any frame.
-    (unless (get-buffer-window "*Python*" t)
-      (python-shell-switch-to-shell)))
-  (defun my-python-shell-run-region ()
-    (interactive)
-    (python-shell-send-region (region-beginning) (region-end))
-    (python-shell-switch-to-shell))
-  (eval-after-load "python"
-    '(progn
-       (define-key python-mode-map (kbd "C-c C-c") 'my-python-shell-run)
-       (define-key python-mode-map (kbd "C-c C-v") 'my-python-shell-run-region)
-       (define-key python-mode-map (kbd "C-h f") 'python-eldoc-at-point)))
 
 
   (add-hook 'dired-mode-hook
@@ -585,18 +546,15 @@ dump."
 
   ;; dired no confirmation delete
   (setq dired-deletion-confirmer '(lambda (x) t))
-
   ;; fix bug move select whole line
-  (define-key evil-visual-state-map "J"
-    (concat ":m '>+1" (kbd "RET") "gv=gv"))
-  (define-key evil-visual-state-map "K"
-    (concat ":m '<-2" (kbd "RET") "gv=gv"))
+  (drag-stuff-mode t)
+  (global-set-key (kbd "<C-S-up>") 'drag-stuff-up)
+  (global-set-key (kbd "<C-S-down>") 'drag-stuff-down)
 
-  ;; (setq dired-creadeletion-confirmer '(lambda (x) t))
   ;;enable evil increase/decrease number
-  (define-key evil-normal-state-map (kbd "ö") 'evil-numbers/inc-at-pt)
-  (define-key evil-normal-state-map (kbd "å") 'evil-numbers/dec-at-pt)
-  (define-key evil-normal-state-map (kbd "ä") 'end-of-line)
+  (define-key evil-normal-state-map (kbd "å") 'end-of-line)
+  (define-key evil-normal-state-map (kbd "ä") 'evil-numbers/inc-at-pt)
+  (define-key evil-normal-state-map (kbd "ö") 'evil-numbers/dec-at-pt)
 
   (require 'parrot-rotate)
   (define-key evil-normal-state-map (kbd "t") 'parrot-rotate-next-word-at-point)
