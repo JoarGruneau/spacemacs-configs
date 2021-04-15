@@ -73,15 +73,16 @@ This function should only modify configuration layer settings."
      pdf
      epub
      deft
+     ;; (markdown :variables markdown-live-preview-engine 'vmd)
      markdown
      (org :variables org-want-todo-bindings t
           org-enable-hugo-support t)
      react
      (python :variables
              python-backend 'anaconda
-             ;; python-formatter 'black
+             python-formatter 'black
              python-format-on-save t
-             python-sort-imports-on-save t
+             python-sort-imports-on-save nil
              ;; python-format-on-save nil
              python-test-runner '(pytest nose))
      ;; (ruby :variables ruby-version-manager 'chruby)
@@ -515,23 +516,20 @@ dump."
   (defadvice projectile-project-root (around ignore-remote first activate)
     (unless (file-remote-p default-directory) ad-do-it))
   ;; (set-face-attribute 'default nil :font "-DAMA-Ubuntu Mono-normal-normal-normal-*-15-*-*-*-m-0-iso10646-1" :weight 'ultralight)
-  ;; paste over multiple timed
-  ;; (defun evil-paste-after-from-0 ()
-  ;;   (interactive)
-  ;;   (let ((evil-this-register ?0))
-  ;;     (call-interactively 'evil-paste-after)))
-
-  (define-key evil-visual-state-map "p" 'evil-paste-after-from-0)
   ;; create no lock files
   (setq create-lockfiles nil)
   ;; evil treat as word depending on language
+  ;; (add-hook 'python-mode-hook (lambda ()
+  ;;                               ('window-configuration-change-hook (lambda ()
+  ;;                                                                    ('poetry-venv-deactivate)
+  ;;                                                                    ('poetry-venv-toggle)
+  ;;                                                                    ))))
+
+  ;; treat underscore as part of a word
   (add-hook 'python-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
   (add-hook 'js2-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
   (add-hook 'spacemacs-buffer-mode-hook (lambda ()
                                           (set (make-local-variable 'mouse-1-click-follows-link) nil)))
-  (add-hook 'inferior-python-mode-hook
-            (lambda ()
-              (setq company-mode nil)))
   ;; fix for evil search bug
   (defun kill-minibuffer ()
     (interactive)
@@ -646,6 +644,7 @@ dump."
       (fundamental-mode)))
   (spacemacs/set-leader-keys "otm" 'zilongshanren/toggle-major-mode)
 
+  (spacemacs/set-leader-keys "oo" 'poetry-venv-deactivate)
   ;(setq inhibit-compacting-font-caches t)
 
   (defun moon-override-yank-pop (&optional arg)
@@ -654,6 +653,15 @@ dump."
       (kill-region (region-beginning) (region-end))))
 
   (advice-add 'counsel-yank-pop :before #'moon-override-yank-pop)
+
+  (defun evil-paste-after-from-+ ()
+    (interactive)
+    (let ((evil-this-register ?+))
+      (call-interactively 'evil-paste-after)))
+
+  (define-key evil-visual-state-map "p" 'evil-paste-after-from-+)
+  (setq-default evil-kill-on-visual-paste nil)
+
   (setq ivy-more-chars-alist '((counsel-ag . 2)
                                (counsel-grep .2)
                                (t . 3)))
