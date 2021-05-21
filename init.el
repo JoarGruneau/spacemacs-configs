@@ -79,9 +79,9 @@ This function should only modify configuration layer settings."
           org-enable-hugo-support t)
      react
      (python :variables
-             python-backend 'anaconda
+             ;; python-backend 'anaconda
              python-formatter 'black
-             python-format-on-save t
+             python-format-on-save nil
              python-sort-imports-on-save nil
              ;; python-format-on-save nil
              python-test-runner '(pytest nose))
@@ -129,7 +129,7 @@ This function should only modify configuration layer settings."
                     helm-themes helm-swoop helm-spacemacs-help smeargle
                     ido-vertical-mode flx-ido company-quickhelp ivy-rich helm-purpose
                     )
-   dotspacemacs-install-packages '(used-only json)
+   ;; dotspacemacs-install-packages '(used-only)
    dotspacemacs-delete-orphan-packages t))
 
 (defun dotspacemacs/init ()
@@ -510,6 +510,18 @@ dump."
   )
 
 (defun dotspacemacs/user-config ()
+  ;; to get lsp to behave
+  (setq lsp-headerline-breadcrumb-enable nil)
+  (setq lsp-enable-snippet nil) 
+  (setq lsp-ui-doc-enable nil)
+  (setq lsp-ui-sideline-enable nil)
+  (defun custom/disable-lsp-diagnostics ()
+    (setq-local lsp-diagnostic-package :none)
+    )
+
+  (when (configuration-layer/layer-used-p 'lsp)
+    (add-hook 'python-mode-hook 'custom/disable-lsp-diagnostics))
+
   ;; (global-set-key (kbd "TAB") 'hippie-expand)
   (remove-hook 'python-mode-hook 'spacemacs//init-eldoc-python-mode)
   (setq projectile-mode-line "Projectile")
