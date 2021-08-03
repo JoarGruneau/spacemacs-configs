@@ -64,9 +64,9 @@ This function should only modify configuration layer settings."
      restclient
      (gtags :disabled-for clojure emacs-lisp latex javascript python shell-script)
      (shell :variables shell-default-term-shell "/bin/bash")
-     ;; typescript
+
      ;;       shell-default-term-shell "/bin/sh")
-     ;; docker
+     docker
      ;; lsp
      ;; dap
      ;; latex
@@ -89,7 +89,12 @@ This function should only modify configuration layer settings."
      ;; ruby-on-rails
      ;;lua
      html
-     (javascript :variables javascript-disable-tern-port-files nil)
+     (tern :variables tern-disable-port-files nil)
+     (javascript :variables javascript-disable-tern-port-files nil
+                 ;; javascript-backend 'tern
+                 javascript-fmt-tool 'prettier
+                 javascript-fmt-on-save nil
+                 js2-mode-show-strict-warnings nil)
      (typescript :variables
                  typescript-fmt-tool 'prettier
                  typescript-backend 'tide)
@@ -510,14 +515,41 @@ dump."
   )
 
 (defun dotspacemacs/user-config ()
+  (setq-default typescript-indent-level 2)
+  (defun custom/highlight()
+    (interactive)
+    (web-mode)
+    (typescript-mode)
+    )
+  (add-hook 'typescript-tsx-mode-hook 'custom/highlight)
+  (add-hook 'rjsx-mode-hook 'typescript-mode)
+  ;; (add-hook 'javascript-mode 'custom/highlight)
+  (setq js2-mode-show-parse-errors nil)
+  (setq js2-mode-show-strict-warnings nil)
+
+
   ;; to get lsp to behave
   (setq lsp-headerline-breadcrumb-enable nil)
-  (setq lsp-enable-snippet nil) 
+  (setq lsp-enable-snippet nil)
   (setq lsp-ui-doc-enable nil)
   (setq lsp-ui-sideline-enable nil)
   (defun custom/disable-lsp-diagnostics ()
     (setq-local lsp-diagnostic-package :none)
     )
+
+  (defun python-toggle-breakpoint ()
+     "Add a break point, highlight it."
+     (interactive)
+     (let ((trace "breakpoint()")
+           (line (thing-at-point 'line)))
+       (if (and line (string-match trace line))
+           (kill-whole-line)
+         (progn
+           (back-to-indentation)
+           (insert trace)
+           (insert "\n")
+           (python-indent-line)))))
+
 
   (defun custom/python-shell-run ()
     (interactive)
@@ -527,17 +559,20 @@ dump."
         (let ((comint-buffer-maximum-size 0))
           (comint-truncate-buffer))
         )
-      (sleep-for 0.3)
+      (sleep-for 0.5)
       )
     (run-python (python-shell-parse-command) nil nil)
     (switch-to-buffer (other-buffer (current-buffer) t))
     (python-shell-send-buffer)
     (switch-to-buffer (other-buffer (current-buffer) t))
     )
-  (eval-after-load "python"
-    '(progn
-       (define-key python-mode-map (kbd "C-c C-c") 'custom/python-shell-run))
-    )
+
+  (add-hook 'python-mode-hook
+            (lambda()
+              (spacemacs/set-leader-keys-for-major-mode 'python-mode "db" 'python-toggle-breakpoint)
+              (define-key python-mode-map (kbd "C-c C-c") 'custom/python-shell-run)
+              ))
+
 
 
   (when (configuration-layer/layer-used-p 'lsp)
@@ -551,12 +586,6 @@ dump."
   ;; (set-face-attribute 'default nil :font "-DAMA-Ubuntu Mono-normal-normal-normal-*-15-*-*-*-m-0-iso10646-1" :weight 'ultralight)
   ;; create no lock files
   (setq create-lockfiles nil)
-  ;; evil treat as word depending on language
-  ;; (add-hook 'python-mode-hook (lambda ()
-  ;;                               ('window-configuration-change-hook (lambda ()
-  ;;                                                                    ('poetry-venv-deactivate)
-  ;;                                                                    ('poetry-venv-toggle)
-  ;;                                                                    ))))
 
   ;; treat underscore as part of a word
   (add-hook 'python-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
@@ -646,29 +675,29 @@ dump."
    'ivy-sort-matches-functions-alist
    '(counsel-find-file . ivy-sort-function-buffer))
 
-  (defun js-indent-line ()
-    "Indent the current line as JavaScript."
-    (interactive)
-    (let* ((parse-status
-            (save-excursion (syntax-ppss (point-at-bol))))
-           (offset (- (point) (save-excursion (back-to-indentation) (point)))))
-      (if (nth 3 parse-status)
-          'noindent
-        (indent-line-to (js--proper-indentation parse-status))
-        (when (> offset 0) (forward-char offset)))))
+  ;; (defun js-indent-line ()
+  ;;   "Indent the current line as JavaScript."
+  ;;   (interactive)
+  ;;   (let* ((parse-status
+  ;;           (save-excursion (syntax-ppss (point-at-bol))))
+  ;;          (offset (- (point) (save-excursion (back-to-indentation) (point)))))
+  ;;     (if (nth 3 parse-status)
+  ;;         'noindent
+  ;;       (indent-line-to (js--proper-indentation parse-status))
+  ;;       (when (> offset 0) (forward-char offset)))))
 
-  (global-set-key (kbd "<backtab>") 'un-indent-by-removing-4-spaces)
-  (defun un-indent-by-removing-4-spaces ()
-    "remove 4 spaces from beginning of of line"
-    (interactive)
-    (save-excursion
-      (save-match-data
-        (beginning-of-line)
-        ;; get rid of tabs at beginning of line
-        (when (looking-at "^\\s-+")
-          (untabify (match-beginning 0) (match-end 0)))
-        (when (looking-at (concat "^" (make-string tab-width ?\ )))
-          (replace-match "")))))
+  ;; (global-set-key (kbd "<backtab>") 'un-indent-by-removing-4-spaces)
+  ;; (defun un-indent-by-removing-4-spaces ()
+  ;;   "remove 4 spaces from beginning of of line"
+  ;;   (interactive)
+  ;;   (save-excursion
+  ;;     (save-match-data
+  ;;       (beginning-of-line)
+  ;;       ;; get rid of tabs at beginning of line
+  ;;       (when (looking-at "^\\s-+")
+  ;;         (untabify (match-beginning 0) (match-end 0)))
+  ;;       (when (looking-at (concat "^" (make-string tab-width ?\ )))
+  ;;         (replace-match "")))))
 
   (defun zilongshanren/toggle-major-mode ()
     (interactive)
@@ -678,6 +707,11 @@ dump."
   (spacemacs/set-leader-keys "otm" 'zilongshanren/toggle-major-mode)
 
   (spacemacs/set-leader-keys "oo" 'poetry-venv-deactivate)
+  (spacemacs/set-leader-keys "o=" 'custom/highlight)
+
+  (setq which-key-allow-multiple-replacements nil)
+  (spacemacs/declare-prefix-for-mode 'typescript-mode "m=" "custom/highlight")
+  (spacemacs/set-leader-keys-for-major-mode 'typescript-mode "=" 'custom/highlight)
   ;(setq inhibit-compacting-font-caches t)
 
   (defun moon-override-yank-pop (&optional arg)
