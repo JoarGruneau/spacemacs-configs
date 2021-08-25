@@ -79,7 +79,8 @@ This function should only modify configuration layer settings."
           org-enable-hugo-support t)
      react
      (python :variables
-             ;; python-backend 'anaconda
+             python-backend 'lsp
+             python-lsp-server 'pyright
              python-formatter 'black
              python-format-on-save nil
              python-sort-imports-on-save nil
@@ -506,6 +507,7 @@ dump."
   ;;       "-o ControlMaster=auto -o ControlPath='tramp.%%C' -o ControlPersist=no")
 
   ;; ss proxy. But it will cause anacond-mode failed.
+  (setq warning-minimum-level :emergency)
   (setq socks-server '("Default server" "127.0.0.1" 1080 5))
   (setq evil-shift-round nil)
   (setq byte-compile-warnings '(not obsolete))
@@ -613,8 +615,14 @@ dump."
   (global-set-key (kbd "<C-S-up>") 'drag-stuff-up)
   (global-set-key (kbd "<C-S-down>") 'drag-stuff-down)
 
+  (defun mark-from-point-to-end-of-line ()
+    "Marks everything from point to end of line"
+    (interactive)
+    (set-mark (line-end-position))
+    (activate-mark))
+
   ;;enable evil increase/decrease number
-  (define-key evil-normal-state-map (kbd "å") 'end-of-line)
+  (define-key evil-normal-state-map (kbd "å") 'mark-from-point-to-end-of-line)
   (define-key evil-normal-state-map (kbd "ä") 'evil-numbers/inc-at-pt)
   (define-key evil-normal-state-map (kbd "ö") 'evil-numbers/dec-at-pt)
 
