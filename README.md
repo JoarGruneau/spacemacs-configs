@@ -1,2 +1,2 @@
 # spacemacs-configs
-got clone ***** .spacemacs.d
+git clone git@github.com:JoarGruneau/spacemacs-configs.git .spacemacs.d
