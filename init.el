@@ -496,6 +496,8 @@ dump."
   )
 
 (defun dotspacemacs/user-init ()
+  ;; hungry-delete counsel ff bug
+  (add-hook 'minibuffer-setup-hook (lambda () (hungry-delete-mode -1)))
 	;; (setq-default configuration-layer-elpa-archives
     ;;   '(("melpa-cn" . "http://elpa.emacs-china.org/melpa/")
     ;;     ("org-cn"   . "http://elpa.emacs-china.org/org/")
@@ -553,26 +555,26 @@ dump."
            (python-indent-line)))))
 
 
-  (defun custom/python-shell-run ()
-    (interactive)
-    (when (get-buffer-process "*Python*")
-      (kill-process (get-buffer-process "*Python*"))
-      (with-current-buffer "*Python*"
-        (let ((comint-buffer-maximum-size 0))
-          (comint-truncate-buffer))
-        )
-      (sleep-for 0.5)
-      )
-    (run-python (python-shell-parse-command) nil nil)
-    (switch-to-buffer (other-buffer (current-buffer) t))
-    (python-shell-send-buffer)
-    (switch-to-buffer (other-buffer (current-buffer) t))
-    )
+  ;; (defun custom/python-shell-run ()
+  ;;   (interactive)
+  ;;   (when (get-buffer-process "*Python*")
+  ;;     (kill-process (get-buffer-process "*Python*"))
+  ;;     (with-current-buffer "*Python*"
+  ;;       (let ((comint-buffer-maximum-size 0))
+  ;;         (comint-truncate-buffer))
+  ;;       )
+  ;;     (sleep-for 0.5)
+  ;;     )
+  ;;   (run-python (python-shell-parse-command) nil nil)
+  ;;   (switch-to-buffer (other-buffer (current-buffer) t))
+  ;;   (python-shell-send-buffer)
+  ;;   (switch-to-buffer (other-buffer (current-buffer) t))
+  ;;   )
 
   (add-hook 'python-mode-hook
             (lambda()
               (spacemacs/set-leader-keys-for-major-mode 'python-mode "db" 'python-toggle-breakpoint)
-              (define-key python-mode-map (kbd "C-c C-c") 'custom/python-shell-run)
+              ;; (define-key python-mode-map (kbd "C-c C-c") 'custom/python-shell-run)
               ))
 
 
